@@ -15,9 +15,9 @@ function GameComponent() {
 
   const gameScript = document.createElement("script");
   function addGameFile() {
-    const UrlParam = window.location.href.split("?");
-    let searchedGame = UrlParam[UrlParam.length - 1];
-    searchedGame = searchedGame.replace(/[^A-Za-z0-9_-]/g, "");
+    // const UrlParam = window.location.href.split("?");
+    // let searchedGame = UrlParam[UrlParam.length - 1];
+    // searchedGame = searchedGame.replace(/[^A-Za-z0-9_-]/g, "");
     const gameFile = `${BASE_URL}docs/${gameName}/main.js`;
     gameScript.src = gameFile;
     if (gameFile.includes("games/main.js")) {

@@ -10,15 +10,24 @@ export default defineConfig({
   base: "/telegram-miniapp-bot/",
   plugins: [
     // Please make sure that '@tanstack/router-plugin' is passed before '@vitejs/plugin-react'
-    react(),
-    tailwindcss(),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
     }),
+    react(),
+    tailwindcss(),
     basicSsl(),
     // tsconfigPaths(),
   ],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   build: {
     target: "esnext",
     copyPublicDir: true,
