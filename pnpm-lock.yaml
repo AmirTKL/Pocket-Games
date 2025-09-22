@@ -39,6 +39,9 @@ importers:
       '@t3-oss/env-core':
         specifier: ^0.13.0
         version: 0.13.8(typescript@5.8.3)(zod@4.0.5)
+      '@telegram-apps/init-data-node':
+        specifier: ^2.0.10
+        version: 2.0.10(typescript@5.8.3)
       drizzle-orm:
         specifier: ^0.43.1
         version: 0.43.1(@types/pg@8.15.4)(pg@8.16.3)
@@ -2944,6 +2947,17 @@ packages:
       error-kid: 0.0.7
       mitt: 3.0.1
       valibot: 1.0.0(typescript@5.8.3)
+    transitivePeerDependencies:
+      - typescript
+    dev: false
+
+  /@telegram-apps/init-data-node@2.0.10(typescript@5.8.3):
+    resolution: {integrity: sha512-hyJ0Qbc1Rqmog4OMS1neZo0PTBKDpOrXzy4EtEyXu8nAA8IK2iYJXnt3wRcvbYn6Qnkyh0wPEkIJmY8Hj3awPw==}
+    deprecated: This package is not supported anymore. Use @tma.js/init-data-node instead
+    dependencies:
+      '@telegram-apps/transformers': 2.2.6(typescript@5.8.3)
+      '@telegram-apps/types': 2.0.3
+      error-kid: 0.0.7
     transitivePeerDependencies:
       - typescript
     dev: false

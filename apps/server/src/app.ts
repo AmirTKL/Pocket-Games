@@ -6,6 +6,13 @@ import { db } from "./db";
 import { usersData } from "./db/schema";
 import { zValidator } from "@hono/zod-validator";
 import z from "zod";
+import {
+  isAuthDateInvalidError,
+  isSignatureInvalidError,
+  parse,
+  validate,
+  isExpiredError,
+} from "@telegram-apps/init-data-node";
 
 const app = new Hono()
   .use(
@@ -19,15 +26,36 @@ const app = new Hono()
       credentials: true,
     })
   )
-  .post(
-    "/api/initdataraw",
+  .use(
     zValidator("header", z.object({ Authorization: z.string() })),
+    async (c, next) => {
+      const authorizationHeader = c.req.header().authorization;
+      const [authType, authData] = authorizationHeader.split(" ");
+      try {
+        validate(authData, process.env.BOT_TOKEN!);
+        const parsedInitData = parse(authData);
+        console.log(parsedInitData);
+      } catch (e) {
+        // if (isAuthDateInvalidError(e)) {
+        //   console.log("Auth date invalid");
+        // } else if (isSignatureInvalidError(e)) {
+        //   console.log("Sign invalid");
+        // } else if (isExpiredError(e)) {
+        //   console.log("Expired init data");
+        // }
+        console.log(e);
+        return;
+      }
+      await next();
+    }
+  )
+  .post(
+    "/api/login",
+    zValidator("json", z.object({ info: z.string() })),
     async (c) => {
-      const { Authorization } = c.req.valid("header");
-      const rawData = Authorization.split(" ");
-      console.log(Authorization)
-      console.log(rawData);
-      return c.json({fucker: "FUCKYOUALL"}, 200)
+      const { info } = c.req.valid("json");
+      console.log("Message is " + info);
+      return c.text("success", 200);
     }
   );
 export default app;
