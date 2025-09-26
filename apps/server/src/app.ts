@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "../env";
 import { db } from "./db";
-import { usersData } from "./db/schema";
 import { zValidator } from "@hono/zod-validator";
 import z from "zod";
 import {
@@ -13,6 +12,7 @@ import {
   validate,
   isExpiredError,
 } from "@telegram-apps/init-data-node";
+import { user } from "./db/schema";
 
 const app = new Hono()
   .use(
@@ -27,7 +27,7 @@ const app = new Hono()
     })
   )
   .use(
-    zValidator("header", z.object({ Authorization: z.string() })),
+    // zValidator("header", z.object({ Authorization: z.string() })),
     async (c, next) => {
       const authorizationHeader = c.req.header().authorization;
       const [authType, authData] = authorizationHeader.split(" ");
@@ -49,13 +49,25 @@ const app = new Hono()
       await next();
     }
   )
+  .use(
+    // zValidator("header", z.object({ userId: z.number() })),
+    async (c, next) => {
+      const userId = Number(c.req.header().userid);
+      await db.insert(user).values({ userId }).onConflictDoNothing();
+      await next();
+    }
+  )
   .post(
-    "/api/login",
-    zValidator("json", z.object({ info: z.string() })),
+    "/api/submitscore",
+    zValidator(
+      "json",
+      z.object({ gameName: z.string(), highscore: z.number() })
+    ),
     async (c) => {
-      const { info } = c.req.valid("json");
-      console.log("Message is " + info);
-      return c.text("success", 200);
+      const { gameName, highscore } = c.req.valid("json");
+      console.log(gameName);
+      console.log(highscore);
+      return c.json({ message: "Hey fuck you, you hear me? Fuck you." }, 200);
     }
   );
 export default app;

@@ -1,11 +1,11 @@
 import { integer, pgTable } from "drizzle-orm/pg-core";
 
-export const usersData = pgTable("users", {
-  id: integer().primaryKey().notNull(),
+export const user = pgTable("user", {
+  userId: integer("user_id").primaryKey().notNull(),
 });
 
 export const gamesHighscore = pgTable("highscores", {
-  userId: integer().references(() => usersData.id),
+  userId: integer().references(() => user.userId),
   aerialbar: integer().default(0),
   antlion: integer().default(0),
   arcfire: integer().default(0),

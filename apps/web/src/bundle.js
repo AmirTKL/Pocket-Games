@@ -1,6 +1,5 @@
-(function (exports) {
-    'use strict';
-
+function bundle (exports) {
+    
     function clamp$1(v, low = 0, high = 1) {
         return Math.max(low, Math.min(v, high));
     }
@@ -2968,7 +2967,7 @@ l l l
         terminal.draw();
     }
     // ! THE HIGHSCORE !
-    function initGameOver() {
+    async function initGameOver() {
         state = "gameOver";
         if (!exports.isReplaying) {
             clearJustPressed();
@@ -2978,7 +2977,14 @@ l l l
         if (s > hiScore) {
             hiScore = s;
         }
+        
         // Logs the highscore - good place to send to an endpoint
+        // let gameName = window.location.search.substring(1);
+        // gameName = gameName.replace(/[^A-Za-z0-9_-]/g, "");
+        // const response = await fetch("https://192.168.1.127:5173/api/submitscore", {
+        //     method: "POST",
+        //     body: {gameName, highscore: hiScore}
+        // })
         console.log(hiScore)
         exports.ticks = -1;
         drawGameOver();
@@ -3300,4 +3306,6 @@ l l l
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
-})(window || {});
+}
+
+bundle(window || {});

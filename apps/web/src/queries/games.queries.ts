@@ -14,6 +14,6 @@ import { client } from "../utils/hono-client";
 //   client.notes[":id"].$get
 // );
 
-export const createNoteMutationOptions = createHonoMutationOptions(
-  client.api.login.$post
+export const submitHighscoreMutationOptions = createHonoMutationOptions(
+  client.api.submitscore.$post
 );

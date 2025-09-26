@@ -2,46 +2,53 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { on, showBackButton } from "@telegram-apps/sdk-react";
 import { useEffect, useState } from "react";
 
+import {
+  addAllWindow,
+  addGameFile,
+} from "../../game-components/crisp-games-lib/main";
+
 export const Route = createFileRoute("/games/$gameName")({
   component: GameComponent,
 });
 
-const BASE_URL = "/telegram-miniapp-bot/";
+// const BASE_URL = "/telegram-miniapp-bot/";
 
 function GameComponent() {
   const { gameName } = Route.useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  // const gameScript = document.createElement("script");
+  // function addGameFile() {
+  //   const gameFile = `${BASE_URL}docs/${gameName}/main.js`;
+  //   gameScript.src = gameFile;
+  //   if (gameFile.includes("games/main.js")) {
+  //     return;
+  //   }
+  //   document.head.appendChild(gameScript);
+  //   gameScript.addEventListener("load", () => {
+  //     crispGameLib.onLoad();
+  //   });
+  // }
 
-  const gameScript = document.createElement("script");
-  function addGameFile() {
-    // const UrlParam = window.location.href.split("?");
-    // let searchedGame = UrlParam[UrlParam.length - 1];
-    // searchedGame = searchedGame.replace(/[^A-Za-z0-9_-]/g, "");
-    const gameFile = `${BASE_URL}docs/${gameName}/main.js`;
-    gameScript.src = gameFile;
-    if (gameFile.includes("games/main.js")) {
-      // alert("No games selected");
-      return;
-    }
-    document.head.appendChild(gameScript);
-  }
   useEffect(() => {
     showBackButton();
+    addAllWindow();
+    addGameFile(gameName);
     on("back_button_pressed", () => {
       navigate({ to: "/games", search: { pageIndex: 1 } });
     });
-    const bundleScript = document.createElement("script");
-    addGameFile();
-    bundleScript.text = "onLoad();";
-    gameScript.addEventListener("load", () => {
-      document.head.appendChild(bundleScript);
-      setIsLoading(false);
-    });
+
+    setIsLoading(false);
+    // const bundleScript = document.createElement("script");
+    // bundleScript.text = "onLoad();";
+    // gameScript.addEventListener("load", () => {
+    //   document.head.appendChild(bundleScript);
+    //   setIsLoading(false);
+    // });
     return () => {
       // alert("Cleaning up");
-      document.head.removeChild(gameScript);
-      document.head.removeChild(bundleScript);
+      // document.head.removeChild(gameScript);
+      // document.head.removeChild(bundleScript);
       location.reload();
     };
   }, []);
