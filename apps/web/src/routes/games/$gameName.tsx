@@ -54,16 +54,8 @@ function GameComponent() {
   }, []);
 
   return (
-    <div style={isLoading ? { display: "block" } : { display: "none" }}>
-      <h1
-        style={{
-          justifySelf: "center",
-          color: "lightcyan",
-          fontWeight: "bolder",
-        }}
-      >
-        Loading Now
-      </h1>
+    <div className={`${isLoading ? "block" : "hidden"}`}>
+      <h1 className="justify-center text-cyan-500 font-bold text-4xl text-center p-10">Loading Now...</h1>
     </div>
   );
 }

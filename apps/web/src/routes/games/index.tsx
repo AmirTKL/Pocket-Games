@@ -5,7 +5,8 @@ import z from "zod";
 
 export const Route = createFileRoute("/games/")({
   component: Games,
-  validateSearch: z.object({ pageIndex: z.number().gte(1).lte(17).catch(1) }),
+  // ! Hardcoded on .lte(), better make it automated.
+  validateSearch: z.object({ pageIndex: z.number().gte(1).lte(21).catch(1) }),
 });
 
 const BASE_URL = "/telegram-miniapp-bot/";
@@ -200,8 +201,8 @@ function Games() {
     "zoneb",
     "zoomio",
   ];
-  const numsPerGroup = 10;
-  const gameList = new Array(17)
+  const numsPerGroup = 8;
+  const gameList = new Array(21)
     .fill("")
     .map((_, i) =>
       fullGameList.slice(i * numsPerGroup, (i + 1) * numsPerGroup)
@@ -209,35 +210,10 @@ function Games() {
 
   return (
     <div>
-      <div
-        style={{
-          margin: 25,
-          display: "flex",
-          textAlign: "center",
-          justifyContent: "center",
-        }}
-      >
-        {/* <button
-          onClick={() => {
-            navigate({ to: "/" });
-          }}
-        >
-          BACK
-        </button> */}
-        <div
-          style={{
-            flex: "auto",
-          }}
-        >
+      <div className="m-5 flex text-center justify-center">
+        <div className="flex-auto">
           <button
-            style={{
-              fontWeight: "bold",
-              padding: 5,
-              borderWidth: 3,
-              borderColor: "black",
-              borderStyle: "solid",
-              borderRadius: 10,
-            }}
+            className={`font-bold p-1.5 border-3 border-gray-900 rounded-xl bg-gray-800 hover:bg-gray-600 active:bg-gray-500 disabled:bg-black disabled:text-gray-600`}
             disabled={pageIndex === 1 ? true : false}
             onClick={() => {
               turnImagesOff();
@@ -247,22 +223,11 @@ function Games() {
             Prev Page
           </button>
         </div>
-        <div style={{ color: "white" }}>{pageIndex}</div>
-        <div
-          style={{
-            flex: "auto",
-          }}
-        >
+        <div className="text-white">{pageIndex}</div>
+        <div className="flex-auto">
           <button
-            style={{
-              fontWeight: "bold",
-              padding: 5,
-              borderWidth: 3,
-              borderColor: "black",
-              borderStyle: "solid",
-              borderRadius: 10,
-            }}
-            disabled={pageIndex === 17 ? true : false}
+            className={`font-bold p-1.5 border-3 border-gray-900 rounded-xl bg-gray-800 hover:bg-gray-600 active:bg-gray-500 disabled:bg-black disabled:text-gray-600`}
+            disabled={pageIndex === 21 ? true : false}
             onClick={() => {
               turnImagesOff();
               navigate({ to: "/games", search: { pageIndex: pageIndex + 1 } });
@@ -272,19 +237,12 @@ function Games() {
           </button>
         </div>
       </div>
-      <div
-        style={{
-          textAlign: "center",
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 10,
-        }}
-      >
+      <div className="text-center grid grid-cols-2">
         {gameList[pageIndex - 1].map((game) => {
           const gameName = game.charAt(0).toUpperCase() + game.slice(1);
 
           return (
-            <div key={game}>
+            <div key={game} className="border-2 m-2 rounded-t-2xl border-gray-600 bg-gray-900 hover:bg-gray-800">
               <button
                 onClick={() => {
                   turnImagesOff();
@@ -294,15 +252,10 @@ function Games() {
                   });
                 }}
               >
-                <h3 style={{ margin: 0, padding: 10 }}>{gameName}</h3>
-                <div
-                  style={{
-                    backgroundColor: "gray",
-                    width: 150,
-                    height: 75,
-                  }}
-                >
+                <h3 className="m-0 p-1 font-semibold">{gameName}</h3>
+                <div className="bg-gray-700 w-fit h-fit rounded-t-2xl">
                   <img
+                  className="rounded-t-2xl"
                     width={150}
                     height={75}
                     src={`${BASE_URL}docs/${game}/screenshot.gif`}
