@@ -1286,7 +1286,6 @@ var __publicField = (obj, key, value) => {
       },
       Lucky: function() {
         var p = EmptyParams();
-        console.log("called lucky")
         map_object(p, function(out, moduleName) {
           var defs = jsfx2.Module[moduleName].params;
           map_object(defs, function(def, name) {
@@ -1706,7 +1705,6 @@ var __publicField = (obj, key, value) => {
       random$2.setSeed(seed);
     }
     const preset = jsfx.Preset[typeFunctionNames[type != null ? type : types[random$2.getInt(8)]]];
-    console.log(preset)
     const params = times(numberOfSounds, () => {
       const p = preset();
       if (freq != null && p.Frequency.Start != null) {

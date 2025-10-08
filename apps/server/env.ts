@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.string(),
     WEB_URL:
       process.env.NODE_ENV === "production"
         ? z.string().min(1)

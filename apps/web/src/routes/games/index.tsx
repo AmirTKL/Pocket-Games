@@ -1,4 +1,4 @@
-import { on, showBackButton } from "@telegram-apps/sdk-react";
+import { hideBackButton, on, showBackButton } from "@telegram-apps/sdk-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import z from "zod";
@@ -27,6 +27,7 @@ function Games() {
     showBackButton();
     on("back_button_pressed", () => {
       turnImagesOff();
+      hideBackButton();
       navigate({ to: "/" });
     });
   }, []);

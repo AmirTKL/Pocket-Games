@@ -29,6 +29,7 @@ import { Theme, ThemeName } from "./loop";
 import * as audio from "./audio";
 import * as recorder from "./recorder";
 import { arc, bar, box, line, rect } from "./rect";
+import { client } from "../../utils/hono-client";
 declare const sss;
 declare const Terser;
 declare const cloneDeep;
@@ -100,9 +101,10 @@ export function rnd(lowOrHigh: number = 1, high?: number) {
 // mine own shit
 const BASE_URL = "/telegram-miniapp-bot/";
 const gameScript = document.createElement("script");
-
-export function addGameFile(gameName: string) {
-  const gameFile = `${BASE_URL}docs/${gameName}/main.js`;
+let gameName: string = "";
+export function addGameFile(gamename: string) {
+  gameName = gamename;
+  const gameFile = `${BASE_URL}docs/${gamename}/main.js`;
   gameScript.src = gameFile;
   if (gameFile.includes("games/main.js")) {
     return;
@@ -634,7 +636,7 @@ export function onUnload() {
   window.audioFiles = undefined;
 }
 
-function _init() {
+async function _init() {
   if (
     typeof description !== "undefined" &&
     description != null &&
@@ -652,7 +654,7 @@ function _init() {
     document.title = title;
     audioSeed += getHash(title);
     localStorageKey = `crisp-game-${encodeURIComponent(title)}-${audioSeed}`;
-    hiScore = loadHighScore();
+    hiScore = await loadHighScore();
   }
   if (typeof characters !== "undefined" && characters != null) {
     defineCharacters(characters, "a");
@@ -1035,29 +1037,39 @@ function getHash(v: string) {
 }
 
 function saveHighScore(highScore: number) {
-  if (localStorageKey == null) {
-    return;
-  }
-  try {
-    const gameState = { highScore };
-    localStorage.setItem(localStorageKey, JSON.stringify(gameState));
-    console.log(highScore);
-  } catch (error) {
-    console.warn("Unable to save high score:", error);
-  }
+  console.log("submitting " + gameName + highScore);
+  client.api.submitscore.$post({ json: { gameName, highScore } });
+  //   if (localStorageKey == null) {
+  //   return;
+  // }
+  // try {
+  //   const gameState = { highScore };
+  //   localStorage.setItem(localStorageKey, JSON.stringify(gameState));
+  //   console.log(highScore);
+  // } catch (error) {
+  //   console.warn("Unable to save high score:", error);
+  // }
 }
 
-function loadHighScore() {
-  try {
-    const gameStateString = localStorage.getItem(localStorageKey);
-    if (gameStateString) {
-      const gameState = JSON.parse(gameStateString);
-      return gameState.highScore;
-    }
-  } catch (error) {
-    console.warn("Unable to load high score:", error);
-  }
-  return 0;
+async function loadHighScore() {
+  console.log("fetching highscore of " + gameName);
+  const highscore = await client.api.fetchscore[":id"]
+    .$get({ param: { id: gameName } })
+    .then((res) => {
+      return res.json();
+    });
+  console.log(highscore[0].highscore);
+  return highscore[0].highscore;
+  // try {
+  //   const gameStateString = localStorage.getItem(localStorageKey);
+  //   if (gameStateString) {
+  //     const gameState = JSON.parse(gameStateString);
+  //     return gameState.highScore;
+  //   }
+  // } catch (error) {
+  //   console.warn("Unable to load high score:", error);
+  // }
+  // return 0;
 }
 
 function isObject(arg) {
@@ -1237,7 +1249,7 @@ export function addAllWindow() {
   window.df = df;
   window.tc = tc;
   window.sc = sc;
-  window.inp = inp
+  window.inp = inp;
   window.PI = PI;
   window.abs = abs;
   window.addGameScript = addGameScript;

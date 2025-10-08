@@ -1,8 +1,8 @@
-import {
-  createHonoMutationOptions,
+// import {
+//   createHonoMutationOptions,
   //   createHonoQueryOptions,
-} from "@reno-stack/hono-react-query";
-import { client } from "../utils/hono-client";
+// } from "@reno-stack/hono-react-query";
+// import { client } from "../utils/hono-client";
 
 // export const notesQueryOptions = createHonoQueryOptions(
 //   ["notes"],
@@ -14,6 +14,6 @@ import { client } from "../utils/hono-client";
 //   client.notes[":id"].$get
 // );
 
-export const submitHighscoreMutationOptions = createHonoMutationOptions(
-  client.api.submitscore.$post
-);
+// export const submitHighscoreMutationOptions = createHonoMutationOptions(
+//   client.api.submitscore.$post
+// );
