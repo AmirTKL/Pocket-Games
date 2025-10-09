@@ -12,7 +12,7 @@ import {
   validate,
   isExpiredError,
 } from "@telegram-apps/init-data-node";
-import { highscores, user } from "./db/schema";
+import { user, userGameInfo } from "./db/schema";
 import { and, eq } from "drizzle-orm";
 
 const app = new Hono()
@@ -61,10 +61,10 @@ const app = new Hono()
       const userId = c.req.header().userid;
       const { gameName, highScore } = c.req.valid("json");
       await db
-        .insert(highscores)
+        .insert(userGameInfo)
         .values({ userId, gameId: gameName, score: highScore })
         .onConflictDoUpdate({
-          target: [highscores.userId, highscores.gameId],
+          target: [userGameInfo.userId, userGameInfo.gameId],
           set: { score: highScore },
         });
       console.log(gameName);
@@ -79,9 +79,11 @@ const app = new Hono()
       const userId = c.req.header().userid;
       const { id } = c.req.valid("param");
       const highScore = await db
-        .select({ highscore: highscores.score })
-        .from(highscores)
-        .where(and(eq(highscores.gameId, id), eq(highscores.userId, userId)));
+        .select({ highscore: userGameInfo.score })
+        .from(userGameInfo)
+        .where(
+          and(eq(userGameInfo.gameId, id), eq(userGameInfo.userId, userId))
+        );
       if (highScore[0]) {
         console.log(highScore);
         return c.json(highScore, 200);
@@ -91,6 +93,43 @@ const app = new Hono()
         );
         return c.json([{ highscore: 0 }], 200);
       }
+    }
+  )
+  .post(
+    "/api/setfavorite/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const userId = c.req.header().userid;
+      const { id } = c.req.valid("param");
+      const isFavorite = await db
+        .select({ favorite: userGameInfo.favorite })
+        .from(userGameInfo)
+        .where(
+          and(eq(userGameInfo.gameId, id), eq(userGameInfo.userId, userId))
+        );
+      if (isFavorite[0] != null && isFavorite[0].favorite === true) {
+        await db
+          .update(userGameInfo)
+          .set({ favorite: false })
+          .where(
+            and(eq(userGameInfo.gameId, id), eq(userGameInfo.userId, userId))
+          );
+      } else {
+        await db
+          .insert(userGameInfo)
+          .values({ userId, gameId: id, favorite: true })
+          .onConflictDoUpdate({
+            target: [userGameInfo.userId, userGameInfo.gameId],
+            set: { favorite: true },
+          });
+        // .insert(userGameInfo)
+        // .values({ userId, gameId: id, favorite: false })
+        // .onConflictDoUpdate({
+        //   target: [userGameInfo.userId, userGameInfo.gameId],
+        //   set: { favorite: false },
+        // });
+      }
+      return c.json({ message: "Uh." }, 200);
     }
   );
 export default app;

@@ -20,7 +20,7 @@ function Index() {
         </Link>
         <Link
           className="border-3 p-3 rounded-2xl border-gray-800 bg-yellow-800 text-gray-300 hover:bg-yellow-700 active:bg-yellow-900"
-          to="/games"
+          to="/games/favorites"
           search={{ pageIndex: 1 }}
         >
           Favourites
