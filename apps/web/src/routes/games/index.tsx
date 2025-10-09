@@ -242,20 +242,24 @@ function Games() {
           const gameName = game.charAt(0).toUpperCase() + game.slice(1);
 
           return (
-            <div key={game} className="border-2 m-2 rounded-t-2xl border-gray-600 bg-gray-900 hover:bg-gray-800">
+            <div
+              key={game}
+              className="border-2 m-2 rounded-t-2xl border-gray-600 bg-gray-900 hover:bg-gray-800"
+            >
               <button
                 onClick={() => {
                   turnImagesOff();
                   navigate({
                     to: "/games/$gameName",
                     params: { gameName: game },
+                    search: { pageIndex },
                   });
                 }}
               >
                 <h3 className="m-0 p-1 font-semibold">{gameName}</h3>
                 <div className="bg-gray-700 w-fit h-fit rounded-t-2xl">
                   <img
-                  className="rounded-t-2xl"
+                    className="rounded-t-2xl"
                     width={150}
                     height={75}
                     src={`${BASE_URL}docs/${game}/screenshot.gif`}

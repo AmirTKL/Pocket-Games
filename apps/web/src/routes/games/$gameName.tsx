@@ -6,15 +6,18 @@ import {
   addAllWindow,
   addGameFile,
 } from "../../game-components/crisp-games-lib/main";
+import z from "zod";
 
 export const Route = createFileRoute("/games/$gameName")({
   component: GameComponent,
+  validateSearch: z.object({ pageIndex: z.number().gte(1).lte(21).catch(1) }),
 });
 
 // const BASE_URL = "/telegram-miniapp-bot/";
 
 function GameComponent() {
   const { gameName } = Route.useParams();
+  const { pageIndex } = Route.useSearch();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   // const gameScript = document.createElement("script");
@@ -35,7 +38,7 @@ function GameComponent() {
     addAllWindow();
     addGameFile(gameName);
     on("back_button_pressed", () => {
-      navigate({ to: "/games", search: { pageIndex: 1 } });
+      navigate({ to: "/games", search: { pageIndex: pageIndex || 1 } });
     });
 
     setIsLoading(false);
@@ -55,7 +58,9 @@ function GameComponent() {
 
   return (
     <div className={`${isLoading ? "block" : "hidden"}`}>
-      <h1 className="justify-center text-cyan-500 font-bold text-4xl text-center p-10">Loading Now...</h1>
+      <h1 className="justify-center text-cyan-500 font-bold text-4xl text-center p-10">
+        Loading Now...
+      </h1>
     </div>
   );
 }
