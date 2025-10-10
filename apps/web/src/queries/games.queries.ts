@@ -1,13 +1,13 @@
 import {
   createHonoMutationOptions,
-    // createHonoQueryOptions,
+  createHonoQueryOptions,
 } from "@reno-stack/hono-react-query";
 import { client } from "../utils/hono-client";
 
-// export const notesQueryOptions = createHonoQueryOptions(
-//   ["notes"],
-//   client.notes.$get
-// );
+export const getGamesQueryOptions = createHonoQueryOptions(
+  ["games"],
+  client.api.games.$get
+);
 
 // export const noteByIdQueryOptions = createHonoQueryOptions(
 //   ({ param: { id } }) => ["notes", id],

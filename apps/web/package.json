@@ -28,6 +28,7 @@
     "@telegram-apps/sdk-react": "^3.3.7",
     "@vitejs/plugin-basic-ssl": "^2.1.0",
     "hono": "^4.8.5",
+    "lucide-react": "^0.545.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.60.0",

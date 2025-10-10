@@ -1,19 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import z from "zod";
 import GameList from "../../../components/gameList";
+// import {
+//   getFavoritesQueryOptions,
+// } from "../../../queries/games.queries";
+// import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/games/favorites/")({
-  component: RouteComponent,
-  // ! Hardcoded on .lte(), better make it automated.
-  validateSearch: z.object({ pageIndex: z.number().gte(1).lte(21).catch(1) }),
+  component: Favorites,
+  validateSearch: z.object({
+    pageIndex: z.number().catch(1),
+  }),
 });
 
-function RouteComponent() {
+function Favorites() {
   const { pageIndex } = Route.useSearch();
-  const gameNameList = [""];
   return (
     <div>
-      <GameList pageIndex={pageIndex} gameNameList={gameNameList}></GameList>
+      <GameList
+        baseUrl="/games/favorites"
+        pageIndex={pageIndex}
+        isFavorite={true}
+        // gameNameList={favoritesQuery.data.games}
+      ></GameList>
     </div>
   );
 }

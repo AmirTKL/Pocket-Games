@@ -5,15 +5,9 @@ import { env } from "../env";
 import { db } from "./db";
 import { zValidator } from "@hono/zod-validator";
 import z from "zod";
-import {
-  isAuthDateInvalidError,
-  isSignatureInvalidError,
-  parse,
-  validate,
-  isExpiredError,
-} from "@telegram-apps/init-data-node";
-import { user, userGameInfo } from "./db/schema";
-import { and, eq } from "drizzle-orm";
+import { parse, validate } from "@telegram-apps/init-data-node";
+import { games, user, userGameInfo } from "./db/schema";
+import { and, count, eq } from "drizzle-orm";
 
 const app = new Hono()
   .use(
@@ -34,13 +28,6 @@ const app = new Hono()
       validate(authData, process.env.BOT_TOKEN!);
       const parsedInitData = parse(authData);
     } catch (e) {
-      // if (isAuthDateInvalidError(e)) {
-      //   console.log("Auth date invalid");
-      // } else if (isSignatureInvalidError(e)) {
-      //   console.log("Sign invalid");
-      // } else if (isExpiredError(e)) {
-      //   console.log("Expired init data");
-      // }
       console.log(e);
       return;
     }
@@ -51,6 +38,34 @@ const app = new Hono()
     await db.insert(user).values({ userId }).onConflictDoNothing();
     await next();
   })
+  .get(
+    "/api/games",
+    async (c) => {
+      const userId = c.req.header().userid;
+      const gamesCount = await db.select({ count: count() }).from(games);
+
+      const gamesList = await db
+        .select({ game: games.name })
+        .from(games)
+
+      const favoriteGames = await db
+        .select({ game: userGameInfo.gameId })
+        .from(userGameInfo)
+        .where(
+          and(eq(userGameInfo.userId, userId), eq(userGameInfo.favorite, true))
+        );
+
+      return c.json(
+        {
+          data: { gamesList, favoriteGames },
+          metadata: {
+            total: gamesCount,
+          },
+        },
+        200
+      );
+    }
+  )
   .post(
     "/api/submitscore",
     zValidator(
@@ -122,16 +137,11 @@ const app = new Hono()
             target: [userGameInfo.userId, userGameInfo.gameId],
             set: { favorite: true },
           });
-        // .insert(userGameInfo)
-        // .values({ userId, gameId: id, favorite: false })
-        // .onConflictDoUpdate({
-        //   target: [userGameInfo.userId, userGameInfo.gameId],
-        //   set: { favorite: false },
-        // });
       }
       return c.json({ message: "Uh." }, 200);
     }
   );
+
 export default app;
 
 export type AppType = typeof app;
