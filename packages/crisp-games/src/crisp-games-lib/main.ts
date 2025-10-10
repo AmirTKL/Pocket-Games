@@ -1057,7 +1057,7 @@ async function loadHighScore() {
     const gameStateString = localStorage.getItem(localStorageKey);
     if (gameStateString) {
       const gameState = JSON.parse(gameStateString);
-      return gameState.highScore;
+      return gameState;
     }
   } catch (error) {
     console.warn("Unable to load high score:", error);
