@@ -82,6 +82,9 @@ importers:
       '@reno-stack/hono-react-query':
         specifier: ^0.0.2
         version: 0.0.2(@tanstack/react-query@5.83.0)(hono@4.8.5)
+      '@repo/crisp-games':
+        specifier: workspace:*
+        version: link:../../packages/crisp-games
       '@repo/server':
         specifier: workspace:*
         version: link:../server
@@ -170,6 +173,25 @@ importers:
       vite:
         specifier: ^7.0.5
         version: 7.0.5
+
+  packages/crisp-games:
+    dependencies:
+      zod:
+        specifier: ^4.0.5
+        version: 4.0.5
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      eslint:
+        specifier: ^9.31.0
+        version: 9.31.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
   packages/eslint-config:
     dependencies:

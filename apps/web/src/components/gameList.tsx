@@ -1,27 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   addFavoriteMutationOptions,
   getGamesQueryOptions,
+  getHighscoresQueryOptions,
 } from "../queries/games.queries";
 import { useEffect } from "react";
 import { hideBackButton, on, showBackButton } from "@telegram-apps/sdk-react";
-// import { InferResponseType } from "hono/client";
-// import { client } from "../utils/hono-client";
 import { Star } from "lucide-react";
 
 export default function GameList({
   pageIndex,
   baseUrl,
   isFavorite,
-  // gameNameList,
 }: {
   pageIndex: number;
-  baseUrl: string;
+  baseUrl: "/games/favorites" | "/games";
   isFavorite: boolean;
-  // gameNameList: InferResponseType<
-  //   (typeof client)["api"]["games"][":page"]["$get"]
-  // >["data"];
 }) {
   const BASE_URL = "/telegram-miniapp-bot/";
   const numsPerGroup = 8;
@@ -29,6 +24,8 @@ export default function GameList({
   const navigate = useNavigate();
   const addFavoriteMutation = useMutation(addFavoriteMutationOptions());
   const gamesQuery = useQuery(getGamesQueryOptions());
+  const highScoresQuery = useQuery(getHighscoresQueryOptions());
+
   const maxPages =
     gamesQuery.data &&
     Math.ceil(gamesQuery.data.metadata.total[0].count / numsPerGroup);
@@ -46,6 +43,16 @@ export default function GameList({
     }
   }
   useEffect(() => {
+    if (highScoresQuery.data) {
+      highScoresQuery.data.map((highscore) => {
+        if (highscore.score) {
+          const localStorageKey = `crisp-game-${highscore.gameId}`;
+          localStorage.setItem(localStorageKey, highscore.score.toString());
+        }
+      });
+    }
+  }, [highScoresQuery]);
+  useEffect(() => {
     showBackButton();
     on("back_button_pressed", () => {
       turnImagesOff();
@@ -53,11 +60,27 @@ export default function GameList({
       navigate({ to: "/" });
     });
   }, []);
-
   if (gamesQuery.data) {
+    if (isFavorite && gamesQuery.data.data.favoriteGames.length === 0) {
+      return (
+        <div className="flex flex-col text-center text-2xl p-5 font-bold">
+          Your favorites page is empty! <br /> <br />{" "}
+          <Link className="underline" to="/games" search={{ pageIndex: 1 }}>
+            You can assign games as your Favorite by pressing the star on their
+            right.
+          </Link>
+        </div>
+      );
+    } else if (!isFavorite && maxPages === 0) {
+      return (
+        <div className="flex flex-col text-center text-2xl p-5 font-bold">
+          This page isn't supposed to be empty. Please refresh/restart the app.
+        </div>
+      );
+    }
     if (
-      (isFavorite && pageIndex > maxFavoritePages!) ||
-      (!isFavorite && pageIndex > maxPages!)
+      (isFavorite && maxFavoritePages && pageIndex > maxFavoritePages) ||
+      (!isFavorite && maxPages && pageIndex > maxPages)
     ) {
       navigate({ to: baseUrl, search: { pageIndex: pageIndex - 1 } });
     }
@@ -78,7 +101,7 @@ export default function GameList({
           );
         }
       });
-
+    console.log(gameList);
     return (
       <div>
         <div className="m-5 flex text-center justify-center">
@@ -88,7 +111,10 @@ export default function GameList({
               disabled={pageIndex === 1 ? true : false}
               onClick={() => {
                 turnImagesOff();
-                navigate({ to: baseUrl, search: { pageIndex: pageIndex - 1 } });
+                navigate({
+                  to: baseUrl,
+                  search: { pageIndex: pageIndex - 1 },
+                });
               }}
             >
               Prev Page
@@ -109,7 +135,10 @@ export default function GameList({
               }
               onClick={() => {
                 turnImagesOff();
-                navigate({ to: baseUrl, search: { pageIndex: pageIndex + 1 } });
+                navigate({
+                  to: baseUrl,
+                  search: { pageIndex: pageIndex + 1 },
+                });
               }}
             >
               Next Page
@@ -118,96 +147,101 @@ export default function GameList({
         </div>
         <div className="text-center grid grid-cols-2">
           {gameList[pageIndex - 1].map(({ game }) => {
-            console.log(game);
-            const gameTitle = game.charAt(0).toUpperCase() + game.slice(1);
-            const isFavorite = gamesQuery.data.data.favoriteGames.some(
-              (favorite) => {
-                return favorite.game === game;
-              }
-            );
+            if (game) {
+              const gameTitle = game.charAt(0).toUpperCase() + game.slice(1);
+              const isFavorite = gamesQuery.data.data.favoriteGames.some(
+                (favorite) => {
+                  return favorite.game === game;
+                }
+              );
 
-            return (
-              <div
-                key={game}
-                className="border-2 m-2 flex flex-row rounded-t-2xl border-gray-600 bg-gray-900 "
-              >
-                <button
-                  className="flex flex-col rounded-tl-2xl hover:bg-gray-800"
-                  onClick={() => {
-                    turnImagesOff();
-                    navigate({
-                      to: "/games/$gameName",
-                      params: { gameName: game },
-                      search: { pageIndex, lastPage: baseUrl },
-                    });
-                  }}
-                >
-                  <h3 className="m-0 p-1 font-semibold">{gameTitle}</h3>
-                  <div className="bg-gray-700 w-fit h-fit rounded-t-2xl">
-                    <img
-                      className="rounded-t-2xl"
-                      width={150}
-                      height={75}
-                      src={`${BASE_URL}docs/${game}/screenshot.gif`}
-                    />
-                  </div>
-                </button>
+              return (
                 <div
-                  className="bg-gray-700 flex items-center rounded-tr-2xl hover:text-yellow-400"
-                  onClick={async () => {
-                    queryClient.setQueryData(
-                      getGamesQueryOptions().queryKey,
-                      (data) => {
-                        if (!data) {
-                          return undefined;
-                        }
-                        if (isFavorite) {
-                          console.log(data);
-                          console.log({
-                            ...data,
-                            data: {
-                              ...data.data,
-                              favoriteGames: data.data.favoriteGames.filter(
-                                (favoriteGame) => {
-                                  favoriteGame.game !== game;
-                                }
-                              ),
-                            },
-                          });
-                          return {
-                            ...data, //Metadata
-                            data: {
-                              ...data?.data, // Gameslist
-                              favoriteGames: data.data.favoriteGames.filter(
-                                (favoriteGame) => {
-                                  return favoriteGame.game !== game;
-                                }
-                              ),
-                            },
-                          };
-                        } else {
-                          return {
-                            ...data, //Metadata
-                            data: {
-                              ...data?.data, // Gameslist
-                              favoriteGames: [
-                                ...(data?.data.favoriteGames ?? []),
-                                { game },
-                              ],
-                            },
-                          };
-                        }
-                      }
-                    );
-                    addFavoriteMutation.mutate({
-                      param: { id: gameTitle.toLowerCase() },
-                    });
-                  }}
+                  key={game}
+                  className="border-2 m-2 flex flex-row rounded-t-2xl border-gray-600 bg-gray-900 "
                 >
-                  <Star fill={`${isFavorite ? "gold" : undefined}`}></Star>
+                  <button
+                    className="flex flex-col rounded-tl-2xl hover:bg-gray-800"
+                    onClick={() => {
+                      turnImagesOff();
+                      if (!game) return;
+
+                      navigate({
+                        to: "/games/$gameName",
+                        params: { gameName: game },
+                        search: { pageIndex, lastPage: baseUrl },
+                      });
+                    }}
+                  >
+                    <h3 className="m-0 p-1 font-semibold">{gameTitle}</h3>
+                    <div className="bg-gray-700 w-fit h-fit rounded-t-2xl">
+                      <img
+                        className="rounded-t-2xl"
+                        width={150}
+                        height={75}
+                        src={`${BASE_URL}docs/${game}/screenshot.gif`}
+                      />
+                    </div>
+                  </button>
+                  <div
+                    className="bg-gray-700 flex items-center rounded-tr-2xl hover:text-yellow-400"
+                    onClick={async () => {
+                      queryClient.setQueryData(
+                        getGamesQueryOptions().queryKey,
+                        (data) => {
+                          if (!data) {
+                            return undefined;
+                          }
+                          if (isFavorite) {
+                            console.log(data);
+                            console.log({
+                              ...data,
+                              data: {
+                                ...data.data,
+                                favoriteGames: data.data.favoriteGames.filter(
+                                  (favoriteGame) => {
+                                    favoriteGame.game !== game;
+                                  }
+                                ),
+                              },
+                            });
+                            return {
+                              ...data, //Metadata
+                              data: {
+                                ...data?.data, // Gameslist
+                                favoriteGames: data.data.favoriteGames.filter(
+                                  (favoriteGame) => {
+                                    return favoriteGame.game !== game;
+                                  }
+                                ),
+                              },
+                            };
+                          } else {
+                            return {
+                              ...data, //Metadata
+                              data: {
+                                ...data?.data, // Gameslist
+                                favoriteGames: [
+                                  ...(data?.data.favoriteGames ?? []),
+                                  { game },
+                                ],
+                              },
+                            };
+                          }
+                        }
+                      );
+                      addFavoriteMutation.mutate({
+                        param: { id: gameTitle.toLowerCase() },
+                      });
+                    }}
+                  >
+                    <Star fill={`${isFavorite ? "gold" : undefined}`}></Star>
+                  </div>
                 </div>
-              </div>
-            );
+              );
+            } else {
+              throw new Error(`"Game" is null! This is not supposed to happen.`);
+            }
           })}
         </div>
       </div>

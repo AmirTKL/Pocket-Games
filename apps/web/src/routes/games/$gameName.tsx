@@ -2,11 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { on, showBackButton } from "@telegram-apps/sdk-react";
 import { useEffect, useState } from "react";
 
-import {
-  addAllWindow,
-  addGameFile,
-} from "../../game-components/crisp-games-lib/main";
+import { addAllWindow, addGameFile } from "@repo/crisp-games";
 import z from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { submitHighscoreMutationoptions } from "../../queries/games.queries";
 
 export const Route = createFileRoute("/games/$gameName")({
   component: GameComponent,
@@ -16,25 +15,12 @@ export const Route = createFileRoute("/games/$gameName")({
   }),
 });
 
-// const BASE_URL = "/telegram-miniapp-bot/";
-
 function GameComponent() {
   const { gameName } = Route.useParams();
   const { pageIndex, lastPage } = Route.useSearch();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  // const gameScript = document.createElement("script");
-  // function addGameFile() {
-  //   const gameFile = `${BASE_URL}docs/${gameName}/main.js`;
-  //   gameScript.src = gameFile;
-  //   if (gameFile.includes("games/main.js")) {
-  //     return;
-  //   }
-  //   document.head.appendChild(gameScript);
-  //   gameScript.addEventListener("load", () => {
-  //     crispGameLib.onLoad();
-  //   });
-  // }
+  const submitScoreMutation = useMutation(submitHighscoreMutationoptions());
 
   useEffect(() => {
     showBackButton();
@@ -43,21 +29,27 @@ function GameComponent() {
     on("back_button_pressed", () => {
       navigate({ to: lastPage, search: { pageIndex: pageIndex || 1 } });
     });
-
     setIsLoading(false);
-    // const bundleScript = document.createElement("script");
-    // bundleScript.text = "onLoad();";
-    // gameScript.addEventListener("load", () => {
-    //   document.head.appendChild(bundleScript);
-    //   setIsLoading(false);
-    // });
     return () => {
-      // alert("Cleaning up");
-      // document.head.removeChild(gameScript);
-      // document.head.removeChild(bundleScript);
       location.reload();
     };
   }, []);
+
+  useEffect(() => {
+    const callback = (event: CustomEvent) => {
+      const highScore = event.detail.highScore;
+      submitScoreMutation.mutate({
+        gameName,
+        highScore,
+      });
+    };
+    document.addEventListener("save_highscore" as any, callback);
+    return () => {
+      document.removeEventListener("save_highscore" as any, callback);
+    };
+  }, []);
+
+
 
   return (
     <div className={`${isLoading ? "block" : "hidden"}`}>

@@ -4,7 +4,7 @@ import * as input from "./input";
 import * as color from "./color";
 import { VectorLike } from "./vector";
 import * as audio from "./audio";
-declare const sss;
+declare const sss: { update: () => void; };
 
 /** Name for an appearance theme. */
 export type ThemeName =

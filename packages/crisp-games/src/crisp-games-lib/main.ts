@@ -29,7 +29,6 @@ import { Theme, ThemeName } from "./loop";
 import * as audio from "./audio";
 import * as recorder from "./recorder";
 import { arc, bar, box, line, rect } from "./rect";
-import { client } from "../../utils/hono-client";
 declare const sss;
 declare const Terser;
 declare const cloneDeep;
@@ -653,7 +652,7 @@ async function _init() {
     isNoTitle = false;
     document.title = title;
     audioSeed += getHash(title);
-    localStorageKey = `crisp-game-${encodeURIComponent(title)}-${audioSeed}`;
+    localStorageKey = `crisp-game-${gameName}`;
     hiScore = await loadHighScore();
   }
   if (typeof characters !== "undefined" && characters != null) {
@@ -1037,39 +1036,34 @@ function getHash(v: string) {
 }
 
 function saveHighScore(highScore: number) {
-  console.log("submitting " + gameName + highScore);
-  client.api.submitscore.$post({ json: { gameName, highScore } });
-  //   if (localStorageKey == null) {
-  //   return;
-  // }
-  // try {
-  //   const gameState = { highScore };
-  //   localStorage.setItem(localStorageKey, JSON.stringify(gameState));
-  //   console.log(highScore);
-  // } catch (error) {
-  //   console.warn("Unable to save high score:", error);
-  // }
+  if (localStorageKey == null) {
+    return;
+  }
+  const gameState = { highScore };
+  try {
+    localStorage.setItem(localStorageKey, JSON.stringify(gameState.highScore));
+  } catch (error) {
+    console.warn("Unable to save high score:", error);
+  }
+
+  const saveHighscoreEvent = new CustomEvent("save_highscore", {
+    detail: gameState,
+  });
+  document.dispatchEvent(saveHighscoreEvent);
 }
 
 async function loadHighScore() {
-  console.log("fetching highscore of " + gameName);
-  const highscore = await client.api.fetchscore[":id"]
-    .$get({ param: { id: gameName } })
-    .then((res) => {
-      return res.json();
-    });
-  console.log(highscore[0].highscore);
-  return highscore[0].highscore;
-  // try {
-  //   const gameStateString = localStorage.getItem(localStorageKey);
-  //   if (gameStateString) {
-  //     const gameState = JSON.parse(gameStateString);
-  //     return gameState.highScore;
-  //   }
-  // } catch (error) {
-  //   console.warn("Unable to load high score:", error);
-  // }
-  // return 0;
+  try {
+    const gameStateString = localStorage.getItem(localStorageKey);
+    if (gameStateString) {
+      const gameState = JSON.parse(gameStateString);
+      return gameState.highScore;
+    }
+  } catch (error) {
+    console.warn("Unable to load high score:", error);
+    40252966;
+  }
+  return 0;
 }
 
 function isObject(arg) {

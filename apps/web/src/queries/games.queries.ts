@@ -9,6 +9,11 @@ export const getGamesQueryOptions = createHonoQueryOptions(
   client.api.games.$get
 );
 
+export const getHighscoresQueryOptions = createHonoQueryOptions(
+  ["highscores"],
+  client.api.fetchscores.$get
+);
+
 // export const noteByIdQueryOptions = createHonoQueryOptions(
 //   ({ param: { id } }) => ["notes", id],
 //   client.notes[":id"].$get
@@ -16,4 +21,8 @@ export const getGamesQueryOptions = createHonoQueryOptions(
 
 export const addFavoriteMutationOptions = createHonoMutationOptions(
   client.api.setfavorite[":id"].$post
+);
+
+export const submitHighscoreMutationoptions = createHonoMutationOptions(
+  client.api.submitscore.$post
 );

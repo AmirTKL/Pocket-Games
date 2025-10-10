@@ -38,34 +38,29 @@ const app = new Hono()
     await db.insert(user).values({ userId }).onConflictDoNothing();
     await next();
   })
-  .get(
-    "/api/games",
-    async (c) => {
-      const userId = c.req.header().userid;
-      const gamesCount = await db.select({ count: count() }).from(games);
+  .get("/api/games", async (c) => {
+    const userId = c.req.header().userid;
+    const gamesCount = await db.select({ count: count() }).from(games);
 
-      const gamesList = await db
-        .select({ game: games.name })
-        .from(games)
+    const gamesList = await db.select({ game: games.name }).from(games);
 
-      const favoriteGames = await db
-        .select({ game: userGameInfo.gameId })
-        .from(userGameInfo)
-        .where(
-          and(eq(userGameInfo.userId, userId), eq(userGameInfo.favorite, true))
-        );
-
-      return c.json(
-        {
-          data: { gamesList, favoriteGames },
-          metadata: {
-            total: gamesCount,
-          },
-        },
-        200
+    const favoriteGames = await db
+      .select({ game: userGameInfo.gameId })
+      .from(userGameInfo)
+      .where(
+        and(eq(userGameInfo.userId, userId), eq(userGameInfo.favorite, true))
       );
-    }
-  )
+
+    return c.json(
+      {
+        data: { gamesList, favoriteGames },
+        metadata: {
+          total: gamesCount,
+        },
+      },
+      200
+    );
+  })
   .post(
     "/api/submitscore",
     zValidator(
@@ -73,6 +68,7 @@ const app = new Hono()
       z.object({ gameName: z.string(), highScore: z.number() })
     ),
     async (c) => {
+      //validate whether the highscore is legitimately higher than the score in the database
       const userId = c.req.header().userid;
       const { gameName, highScore } = c.req.valid("json");
       await db
@@ -87,29 +83,14 @@ const app = new Hono()
       return c.json({ message: "Hey fuck you, you hear me? Fuck you." }, 200);
     }
   )
-  .get(
-    "/api/fetchscore/:id",
-    zValidator("param", z.object({ id: z.string() })),
-    async (c) => {
-      const userId = c.req.header().userid;
-      const { id } = c.req.valid("param");
-      const highScore = await db
-        .select({ highscore: userGameInfo.score })
-        .from(userGameInfo)
-        .where(
-          and(eq(userGameInfo.gameId, id), eq(userGameInfo.userId, userId))
-        );
-      if (highScore[0]) {
-        console.log(highScore);
-        return c.json(highScore, 200);
-      } else {
-        console.log(
-          "No score found. Setting highscore to 0! Note to self: can be done in client as well. Maybe check it twice?"
-        );
-        return c.json([{ highscore: 0 }], 200);
-      }
-    }
-  )
+  .get("/api/fetchscores", async (c) => {
+    const userId = c.req.header().userid;
+    const highScores = await db
+      .select()
+      .from(userGameInfo)
+      .where(eq(userGameInfo.userId, userId));
+    return c.json(highScores, 200);
+  })
   .post(
     "/api/setfavorite/:id",
     zValidator("param", z.object({ id: z.string() })),
