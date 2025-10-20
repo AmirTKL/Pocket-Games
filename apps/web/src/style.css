@@ -80,3 +80,21 @@ body {
     --ring: 240 4.9% 83.9%;
   }
 }
+
+
+
+  .favorite-animation {
+    animation: 250ms favorite ease-in;
+  }
+
+  @keyframes favorite {
+    0% {
+      transform: scale(1);
+    }
+    25% {
+      transform: scale(1.15) rotate(6deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
+  }

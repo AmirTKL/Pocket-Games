@@ -1,5 +1,4 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { init, mountBackButton } from "@telegram-apps/sdk-react";
 
 // Should display EVERYWHERE - just in case
@@ -10,7 +9,6 @@ mountBackButton();
 const RootLayout = () => (
   <>
     <Outlet />
-    <TanStackRouterDevtools />
   </>
 );
 

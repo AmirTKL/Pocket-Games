@@ -180,11 +180,7 @@ function Games() {
   // ];
   return (
     <div>
-      <GameList
-        baseUrl="/games"
-        pageIndex={pageIndex}
-        isFavorite={false}
-      ></GameList>
+      <GameList baseUrl="/games" pageIndex={pageIndex} perPage={16}></GameList>
     </div>
   );
 }

@@ -1,10 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import z from "zod";
 import GameList from "../../../components/gameList";
-// import {
-//   getFavoritesQueryOptions,
-// } from "../../../queries/games.queries";
-// import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/games/favorites/")({
   component: Favorites,
@@ -20,8 +16,7 @@ function Favorites() {
       <GameList
         baseUrl="/games/favorites"
         pageIndex={pageIndex}
-        isFavorite={true}
-        // gameNameList={favoritesQuery.data.games}
+        perPage={8}
       ></GameList>
     </div>
   );
