@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { hideBackButton, on, showBackButton } from "@telegram-apps/sdk-react";
 import { Star } from "lucide-react";
+import Layout from "./layout";
 
 export default function GameList({
   pageIndex,
@@ -34,7 +35,7 @@ export default function GameList({
     gamesQuery.data &&
     Math.ceil(gamesQuery.data.data.favoriteGames.length / numsPerGroup);
   function turnImagesOff() {
-    const oldPageImages = document.getElementsByTagName("img");
+    const oldPageImages = document.querySelectorAll(".gameImage") as unknown as HTMLCollectionOf<HTMLImageElement>;
     console.log(oldPageImages);
     for (let i = 0; i < oldPageImages.length; i++) {
       const image = oldPageImages[i];
@@ -104,10 +105,10 @@ export default function GameList({
       });
     console.log(gameList);
     return (
-      <div className="">
-        <div className="m-5 mb-2 flex text-center justify-center">
+      <div>
+        <Layout>
           <button
-            className={`${isFavorite ? "bg-amber-900/50" : ""} rounded-full p-2 hover:text-amber-400`}
+            className={`${isFavorite ? "bg-amber-900/50" : ""} rounded-full p-2 hover:text-amber-400 mt-2`}
             onClick={async () => {
               if (maxFavoritePages && pageIndex > maxFavoritePages) {
                 await navigate({
@@ -120,8 +121,8 @@ export default function GameList({
           >
             <Star fill={`${isFavorite ? "gold" : undefined}`}></Star>
           </button>
-          {/* Make the pagination better -> let the user jump high numbers (predescribed jumps and/or input jumps) */}
-        </div>
+        </Layout>
+        <div className="m-2 flex text-center justify-center"></div>
         <div className="text-center grid grid-cols-2">
           {gameList[pageIndex - 1].map(({ game }) => {
             if (game) {
@@ -152,7 +153,7 @@ export default function GameList({
                   >
                     <div className="w-full h-20">
                       <img
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover gameImage"
                         src={`${BASE_URL}docs/${game}/screenshot.gif`}
                       />
                     </div>

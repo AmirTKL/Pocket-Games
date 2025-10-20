@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import Layout from "../components/layout";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -7,6 +8,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <div>
+      <Layout children />
       <div className="p-15 text-3xl flex flex-col text-center items-center gap-15">
         <h1 className="font-bold">Tiny Games</h1>
         <Link
@@ -15,13 +17,6 @@ function Index() {
           search={{ pageIndex: 1 }}
         >
           All Games
-        </Link>
-        <Link
-          className="border-3 p-3 rounded-2xl border-gray-800 bg-yellow-800 text-gray-300 hover:bg-yellow-700 active:bg-yellow-900"
-          to="/games/favorites"
-          search={{ pageIndex: 1 }}
-        >
-          Favourites
         </Link>
       </div>
     </div>
