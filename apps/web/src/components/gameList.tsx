@@ -1,14 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
   addFavoriteMutationOptions,
   getGamesQueryOptions,
   getHighscoresQueryOptions,
 } from "../queries/games.queries";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { hideBackButton, on, showBackButton } from "@telegram-apps/sdk-react";
 import { Star } from "lucide-react";
 import Layout from "./layout";
+import useQueryState from "../hooks/usequerystate";
 
 export default function GameList({
   pageIndex,
@@ -17,11 +18,11 @@ export default function GameList({
 }: {
   pageIndex: number;
   perPage: number;
-  baseUrl: "/games/favorites" | "/games";
+  baseUrl: "/games";
 }) {
   const BASE_URL = "/telegram-miniapp-bot/";
   const numsPerGroup = perPage;
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useQueryState("isfavorite", "boolean");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const addFavoriteMutation = useMutation(addFavoriteMutationOptions());
@@ -35,7 +36,9 @@ export default function GameList({
     gamesQuery.data &&
     Math.ceil(gamesQuery.data.data.favoriteGames.length / numsPerGroup);
   function turnImagesOff() {
-    const oldPageImages = document.querySelectorAll(".gameImage") as unknown as HTMLCollectionOf<HTMLImageElement>;
+    const oldPageImages = document.querySelectorAll(
+      ".gameImage"
+    ) as unknown as HTMLCollectionOf<HTMLImageElement>;
     console.log(oldPageImages);
     for (let i = 0; i < oldPageImages.length; i++) {
       const image = oldPageImages[i];
@@ -44,6 +47,7 @@ export default function GameList({
       console.log(image.src);
     }
   }
+
   useEffect(() => {
     if (highScoresQuery.data) {
       highScoresQuery.data.map((highscore) => {
@@ -65,12 +69,20 @@ export default function GameList({
   if (gamesQuery.data) {
     if (isFavorite && gamesQuery.data.data.favoriteGames.length === 0) {
       return (
-        <div className="flex flex-col text-center text-2xl p-5 font-bold">
-          Your favorites page is empty! <br /> <br />{" "}
-          <Link className="underline" to="/games" search={{ pageIndex: 1 }}>
-            You can assign games as your Favorite by pressing the star on their
-            right.
-          </Link>
+        <div>
+          <Layout children />
+          <div className="flex flex-col text-center text-2xl p-5 font-bold">
+            Your favorites page is empty! <br /> <br />{" "}
+            <p
+              className="underline cursor-pointer"
+              onClick={() => {
+                setIsFavorite(false);
+              }}
+            >
+              You can assign games as your Favorite by pressing the star on
+              their right.
+            </p>
+          </div>
         </div>
       );
     } else if (!isFavorite && maxPages === 0) {
@@ -80,23 +92,15 @@ export default function GameList({
         </div>
       );
     }
-    if (
-      (isFavorite && maxFavoritePages && pageIndex > maxFavoritePages) ||
-      (!isFavorite && maxPages && pageIndex > maxPages)
-    ) {
-      navigate({ to: baseUrl, search: { pageIndex: maxFavoritePages } });
-    }
     const gameList = new Array(isFavorite ? maxFavoritePages : maxPages)
       .fill("")
       .map((_, i) => {
         if (isFavorite) {
-          console.log(isFavorite);
           return gamesQuery.data.data.favoriteGames.slice(
             i * numsPerGroup,
             (i + 1) * numsPerGroup
           );
         } else {
-          console.log(isFavorite);
           return gamesQuery.data.data.gamesList.slice(
             i * numsPerGroup,
             (i + 1) * numsPerGroup

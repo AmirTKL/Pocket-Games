@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as GamesIndexRouteImport } from './routes/games/index'
 import { Route as GamesGameNameRouteImport } from './routes/games/$gameName'
-import { Route as GamesFavoritesIndexRouteImport } from './routes/games/favorites/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,25 +34,18 @@ const GamesGameNameRoute = GamesGameNameRouteImport.update({
   path: '/games/$gameName',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GamesFavoritesIndexRoute = GamesFavoritesIndexRouteImport.update({
-  id: '/games/favorites/',
-  path: '/games/favorites/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/games/$gameName': typeof GamesGameNameRoute
   '/games': typeof GamesIndexRoute
   '/profile': typeof ProfileIndexRoute
-  '/games/favorites': typeof GamesFavoritesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/games/$gameName': typeof GamesGameNameRoute
   '/games': typeof GamesIndexRoute
   '/profile': typeof ProfileIndexRoute
-  '/games/favorites': typeof GamesFavoritesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,25 +53,13 @@ export interface FileRoutesById {
   '/games/$gameName': typeof GamesGameNameRoute
   '/games/': typeof GamesIndexRoute
   '/profile/': typeof ProfileIndexRoute
-  '/games/favorites/': typeof GamesFavoritesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/games/$gameName'
-    | '/games'
-    | '/profile'
-    | '/games/favorites'
+  fullPaths: '/' | '/games/$gameName' | '/games' | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/games/$gameName' | '/games' | '/profile' | '/games/favorites'
-  id:
-    | '__root__'
-    | '/'
-    | '/games/$gameName'
-    | '/games/'
-    | '/profile/'
-    | '/games/favorites/'
+  to: '/' | '/games/$gameName' | '/games' | '/profile'
+  id: '__root__' | '/' | '/games/$gameName' | '/games/' | '/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -87,7 +67,6 @@ export interface RootRouteChildren {
   GamesGameNameRoute: typeof GamesGameNameRoute
   GamesIndexRoute: typeof GamesIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
-  GamesFavoritesIndexRoute: typeof GamesFavoritesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -120,13 +99,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesGameNameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/games/favorites/': {
-      id: '/games/favorites/'
-      path: '/games/favorites'
-      fullPath: '/games/favorites'
-      preLoaderRoute: typeof GamesFavoritesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -135,7 +107,6 @@ const rootRouteChildren: RootRouteChildren = {
   GamesGameNameRoute: GamesGameNameRoute,
   GamesIndexRoute: GamesIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
-  GamesFavoritesIndexRoute: GamesFavoritesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
