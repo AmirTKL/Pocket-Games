@@ -9,7 +9,8 @@ export const userGameInfo = pgTable(
   {
     userId: text("user_id").references(() => user.userId),
     gameId: text("game_id").references(() => games.id),
-    score: integer().default(0),
+    score: text().default("0"),
+    playtime: text(),
     favorite: boolean().default(false),
   },
   (t) => [unique().on(t.userId, t.gameId)]

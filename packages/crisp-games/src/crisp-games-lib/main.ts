@@ -1057,11 +1057,10 @@ async function loadHighScore() {
     const gameStateString = localStorage.getItem(localStorageKey);
     if (gameStateString) {
       const gameState = JSON.parse(gameStateString);
-      return gameState;
+      return Number(gameState);
     }
   } catch (error) {
     console.warn("Unable to load high score:", error);
-    40252966;
   }
   return 0;
 }

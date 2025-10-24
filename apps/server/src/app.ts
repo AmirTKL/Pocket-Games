@@ -7,7 +7,7 @@ import { zValidator } from "@hono/zod-validator";
 import z from "zod";
 import { parse, validate } from "@telegram-apps/init-data-node";
 import { games, user, userGameInfo } from "./db/schema";
-import { and, count, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 
 const app = new Hono()
   .use(
@@ -73,10 +73,10 @@ const app = new Hono()
       const { gameName, highScore } = c.req.valid("json");
       await db
         .insert(userGameInfo)
-        .values({ userId, gameId: gameName, score: highScore })
+        .values({ userId, gameId: gameName, score: highScore.toString() })
         .onConflictDoUpdate({
           target: [userGameInfo.userId, userGameInfo.gameId],
-          set: { score: highScore },
+          set: { score: highScore.toString() },
         });
       console.log(gameName);
       console.log(highScore);
@@ -121,7 +121,56 @@ const app = new Hono()
       }
       return c.json({ message: "Uh." }, 200);
     }
-  );
+  )
+  .post(
+    "/api/playtimeping",
+    zValidator("json", z.object({ id: z.string(), time: z.string() })),
+    async (c) => {
+      const userId = c.req.header().userid;
+      const { id, time } = c.req.valid("json");
+      const gamePlaytime = await db
+        .select({ playtime: userGameInfo.playtime })
+        .from(userGameInfo)
+        .where(
+          and(eq(userGameInfo.gameId, id), eq(userGameInfo.userId, userId))
+        );
+      await db
+        .insert(userGameInfo)
+        .values({ userId, gameId: id, playtime: time })
+        .onConflictDoUpdate({
+          target: [userGameInfo.userId, userGameInfo.gameId],
+          set: {
+            playtime: (
+              Number(gamePlaytime[0].playtime) + Number(time)
+            ).toString(),
+          },
+        });
+      return c.json({ message: "Doune." }, 200);
+    }
+  )
+  .post(
+    "/api/defaultusergameinfo",
+    zValidator("json", z.object({ id: z.string() })),
+    async (c) => {
+      const userId = c.req.header().userid;
+      const { id } = c.req.valid("json");
+      await db
+        .insert(userGameInfo)
+        .values({ userId, gameId: id })
+        .onConflictDoNothing();
+      return c.json({ message: "Erm." }, 200);
+    }
+  )
+  .get("/api/topplaytimes", async (c) => {
+    const userId = c.req.header().userid;
+    const topPlaytimes = await db
+      .select({ game: userGameInfo.gameId, playtime: userGameInfo.playtime })
+      .from(userGameInfo)
+      .where(eq(userGameInfo.userId, userId))
+      .orderBy(asc(userGameInfo.playtime))
+      .limit(5);
+    return c.json(topPlaytimes, 200);
+  });
 
 export default app;
 

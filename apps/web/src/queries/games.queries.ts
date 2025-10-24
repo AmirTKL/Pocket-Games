@@ -14,10 +14,10 @@ export const getHighscoresQueryOptions = createHonoQueryOptions(
   client.api.fetchscores.$get
 );
 
-// export const noteByIdQueryOptions = createHonoQueryOptions(
-//   ({ param: { id } }) => ["notes", id],
-//   client.notes[":id"].$get
-// );
+export const getTopPlaytimesQueryOptions = createHonoQueryOptions(
+  ["topplaytimes"],
+  client.api.topplaytimes.$get
+);
 
 export const addFavoriteMutationOptions = createHonoMutationOptions(
   client.api.setfavorite[":id"].$post
@@ -26,3 +26,16 @@ export const addFavoriteMutationOptions = createHonoMutationOptions(
 export const submitHighscoreMutationoptions = createHonoMutationOptions(
   client.api.submitscore.$post
 );
+
+export const addPlayTimeMutationOptions = createHonoMutationOptions(
+  client.api.playtimeping.$post
+);
+
+export const insertDefaulyValuesMutationOptions = createHonoMutationOptions(
+  client.api.defaultusergameinfo.$post
+);
+
+// export const noteByIdQueryOptions = createHonoQueryOptions(
+//   ({ param: { id } }) => ["notes", id],
+//   client.notes[":id"].$get
+// );

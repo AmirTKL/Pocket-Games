@@ -5,12 +5,16 @@ import { useEffect, useState } from "react";
 import { addAllWindow, addGameFile } from "@repo/crisp-games";
 import z from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { submitHighscoreMutationoptions } from "../../queries/games.queries";
+import {
+  addPlayTimeMutationOptions,
+  insertDefaulyValuesMutationOptions,
+  submitHighscoreMutationoptions,
+} from "../../queries/games.queries";
 
 export const Route = createFileRoute("/games/$gameName")({
   component: GameComponent,
   validateSearch: z.object({
-    pageIndex: z.number().catch(1),
+    pageIndex: z.number().catch(1).optional(),
     lastPage: z.string(),
   }),
 });
@@ -21,12 +25,29 @@ function GameComponent() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const submitScoreMutation = useMutation(submitHighscoreMutationoptions());
+  const addPlaytime = useMutation(addPlayTimeMutationOptions());
+  const insertDefaults = useMutation(insertDefaulyValuesMutationOptions());
+
+  useEffect(() => {
+    insertDefaults.mutate({ id: gameName });
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      console.log(gameName);
+      addPlaytime.mutate({ id: gameName, time: "60" });
+    }, 60000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     showBackButton();
     addAllWindow();
     addGameFile(gameName);
     on("back_button_pressed", () => {
+      //Perhaps check if the pageIndex is required or not first, somehow.
       navigate({ to: lastPage, search: { pageIndex: pageIndex || 1 } });
     });
     setIsLoading(false);
@@ -48,8 +69,6 @@ function GameComponent() {
       document.removeEventListener("save_highscore" as any, callback);
     };
   }, []);
-
-
 
   return (
     <div className={`${isLoading ? "block" : "hidden"}`}>
