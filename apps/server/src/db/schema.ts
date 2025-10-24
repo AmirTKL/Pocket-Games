@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, text, unique } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   userId: text("user_id").primaryKey(),
@@ -11,6 +11,7 @@ export const userGameInfo = pgTable(
     gameId: text("game_id").references(() => games.id),
     score: text().default("0"),
     playtime: text(),
+    lastPlayed: timestamp().defaultNow(),
     favorite: boolean().default(false),
   },
   (t) => [unique().on(t.userId, t.gameId)]

@@ -7,7 +7,7 @@ import { zValidator } from "@hono/zod-validator";
 import z from "zod";
 import { parse, validate } from "@telegram-apps/init-data-node";
 import { games, user, userGameInfo } from "./db/schema";
-import { and, asc, count, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 
 const app = new Hono()
   .use(
@@ -41,25 +41,45 @@ const app = new Hono()
   .get("/api/games", async (c) => {
     const userId = c.req.header().userid;
     const gamesCount = await db.select({ count: count() }).from(games);
-
     const gamesList = await db.select({ game: games.name }).from(games);
-
     const favoriteGames = await db
       .select({ game: userGameInfo.gameId })
       .from(userGameInfo)
       .where(
         and(eq(userGameInfo.userId, userId), eq(userGameInfo.favorite, true))
       );
+    const recentGames = await db
+      .select({
+        game: userGameInfo.gameId,
+        lastPlayed: userGameInfo.lastPlayed,
+      })
+      .from(userGameInfo)
+      .where(eq(userGameInfo.userId, userId))
+      .orderBy(desc(userGameInfo.lastPlayed))
+      .limit(4);
 
     return c.json(
       {
-        data: { gamesList, favoriteGames },
+        data: { gamesList, favoriteGames, recentGames },
         metadata: {
           total: gamesCount,
         },
       },
       200
     );
+  })
+  .get("/api/recentgames", async (c) => {
+    const userId = c.req.header().userid;
+    const recentGames = await db
+      .select({
+        game: userGameInfo.gameId,
+        lastPlayed: userGameInfo.lastPlayed,
+      })
+      .from(userGameInfo)
+      .where(eq(userGameInfo.userId, userId))
+      .orderBy(desc(userGameInfo.lastPlayed))
+      .limit(4);
+    return c.json(recentGames, 200);
   })
   .post(
     "/api/submitscore",
@@ -136,7 +156,7 @@ const app = new Hono()
         );
       await db
         .insert(userGameInfo)
-        .values({ userId, gameId: id, playtime: time })
+        .values({ userId, gameId: id, playtime: time, lastPlayed: new Date() })
         .onConflictDoUpdate({
           target: [userGameInfo.userId, userGameInfo.gameId],
           set: {

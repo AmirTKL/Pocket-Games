@@ -19,6 +19,11 @@ export const getTopPlaytimesQueryOptions = createHonoQueryOptions(
   client.api.topplaytimes.$get
 );
 
+export const getRecentGamesQueryOptions = createHonoQueryOptions(
+  ["recentgames"],
+  client.api.recentgames.$get
+);
+
 export const addFavoriteMutationOptions = createHonoMutationOptions(
   client.api.setfavorite[":id"].$post
 );

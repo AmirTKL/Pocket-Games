@@ -15,14 +15,22 @@ export default function GameList({
   pageIndex,
   perPage,
   baseUrl,
+  setInitialFavorite,
+  setInitialRecent,
+  showProfile,
+  showPagination,
 }: {
   pageIndex: number;
   perPage: number;
-  baseUrl: "/games";
+  baseUrl: string;
+  setInitialFavorite: boolean;
+  setInitialRecent: boolean;
+  showProfile: boolean;
+  showPagination: boolean;
 }) {
   const BASE_URL = "/telegram-miniapp-bot/";
   const numsPerGroup = perPage;
-  const [isFavorite, setIsFavorite] = useQueryState("isfavorite", "boolean");
+  const [isFavorite, setIsFavorite] = useQueryState("isFavorite", "boolean");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const addFavoriteMutation = useMutation(addFavoriteMutationOptions());
@@ -35,6 +43,9 @@ export default function GameList({
   const maxFavoritePages =
     gamesQuery.data &&
     Math.ceil(gamesQuery.data.data.favoriteGames.length / numsPerGroup);
+  const maxRecentPages =
+    gamesQuery.data &&
+    Math.ceil(gamesQuery.data.data.recentGames.length / numsPerGroup);
   function turnImagesOff() {
     const oldPageImages = document.querySelectorAll(
       ".gameImage"
@@ -49,6 +60,12 @@ export default function GameList({
   }
 
   useEffect(() => {
+    if (setInitialFavorite) {
+      setIsFavorite(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (highScoresQuery.data) {
       highScoresQuery.data.map((highscore) => {
         if (highscore.score) {
@@ -59,18 +76,20 @@ export default function GameList({
     }
   }, [highScoresQuery]);
   useEffect(() => {
-    showBackButton();
-    on("back_button_pressed", () => {
-      turnImagesOff();
-      hideBackButton();
-      navigate({ to: "/" });
-    });
+    if (baseUrl !== "/") {
+      showBackButton();
+      on("back_button_pressed", () => {
+        turnImagesOff();
+        hideBackButton();
+        navigate({ to: "/" });
+      });
+    }
   }, []);
   if (gamesQuery.data) {
     if (isFavorite && gamesQuery.data.data.favoriteGames.length === 0) {
       return (
         <div>
-          <Layout children />
+          {showProfile ? <Layout children /> : undefined}
           <div className="flex flex-col text-center text-2xl p-5 font-bold">
             Your favorites page is empty! <br /> <br />{" "}
             <p
@@ -92,11 +111,22 @@ export default function GameList({
         </div>
       );
     }
-    const gameList = new Array(isFavorite ? maxFavoritePages : maxPages)
+    const gameList = new Array(
+      isFavorite
+        ? maxFavoritePages
+        : setInitialRecent
+          ? maxRecentPages
+          : maxPages
+    )
       .fill("")
       .map((_, i) => {
         if (isFavorite) {
           return gamesQuery.data.data.favoriteGames.slice(
+            i * numsPerGroup,
+            (i + 1) * numsPerGroup
+          );
+        } else if (setInitialRecent) {
+          return gamesQuery.data.data.recentGames.slice(
             i * numsPerGroup,
             (i + 1) * numsPerGroup
           );
@@ -110,22 +140,24 @@ export default function GameList({
     console.log(gameList);
     return (
       <div>
-        <Layout>
-          <button
-            className={`${isFavorite ? "bg-amber-900/50" : ""} rounded-full p-2 hover:text-amber-400 mt-2`}
-            onClick={async () => {
-              if (maxFavoritePages && pageIndex > maxFavoritePages) {
-                await navigate({
-                  to: baseUrl,
-                  search: { pageIndex: maxFavoritePages },
-                });
-              }
-              isFavorite ? setIsFavorite(false) : setIsFavorite(true);
-            }}
-          >
-            <Star fill={`${isFavorite ? "gold" : undefined}`}></Star>
-          </button>
-        </Layout>
+        {showProfile ? (
+          <Layout>
+            <button
+              className={`${isFavorite ? "bg-amber-900/50" : ""} rounded-full p-2 hover:text-amber-400 mt-2`}
+              onClick={async () => {
+                if (maxFavoritePages && pageIndex > maxFavoritePages) {
+                  await navigate({
+                    to: baseUrl,
+                    search: { pageIndex: maxFavoritePages, isFavorite },
+                  });
+                }
+                isFavorite ? setIsFavorite(false) : setIsFavorite(true);
+              }}
+            >
+              <Star fill={`${isFavorite ? "gold" : undefined}`}></Star>
+            </button>
+          </Layout>
+        ) : undefined}
         <div className="m-2 flex text-center justify-center"></div>
         <div className="text-center grid grid-cols-2">
           {gameList[pageIndex - 1].map(({ game }) => {
@@ -169,24 +201,26 @@ export default function GameList({
                     <button
                       onClick={async () => {
                         queryClient.setQueryData(
-                          getGamesQueryOptions().queryKey,
+                          getGamesQueryOptions({
+                            json: {
+                              isRecent: setInitialRecent.valueOf.toString(),
+                            },
+                          }).queryKey,
                           (data) => {
                             if (!data) {
                               return undefined;
                             }
                             if (isFavorite) {
-                              console.log(data);
-                              console.log({
-                                ...data,
-                                data: {
-                                  ...data.data,
-                                  favoriteGames: data.data.favoriteGames.filter(
-                                    (favoriteGame) => {
-                                      favoriteGame.game !== game;
-                                    }
-                                  ),
-                                },
-                              });
+                              if (gameList[pageIndex - 1].length === 1) {
+                                navigate({
+                                  to: baseUrl,
+                                  search: {
+                                    pageIndex: pageIndex - 1,
+                                    isFavorite,
+                                  },
+                                });
+                              }
+                              // if (gameList[pageIndex - 1])
                               return {
                                 ...data, //Metadata
                                 data: {
@@ -231,49 +265,51 @@ export default function GameList({
             }
           })}
         </div>
-        <div className="flex flex-row p-2 text-center w-full gap-5 sticky items justify-center bottom-0 bg-gray-950/80">
-          <div className="flex-auto">
-            <button
-              className={`font-bold p-1.5 rounded-xl bg-gray-800 hover:bg-gray-600 active:bg-gray-500 disabled:bg-black disabled:text-gray-600`}
-              disabled={pageIndex === 1 ? true : false}
-              onClick={() => {
-                turnImagesOff();
-                navigate({
-                  to: baseUrl,
-                  search: { pageIndex: pageIndex - 1 },
-                });
-              }}
-            >
-              Prev Page
-            </button>
+        {showPagination ? (
+          <div className="flex flex-row p-2 text-center w-full gap-5 sticky items justify-center bottom-0 bg-gray-950/80">
+            <div className="flex-auto">
+              <button
+                className={`font-bold p-1.5 rounded-xl bg-gray-800 hover:bg-gray-600 active:bg-gray-500 disabled:bg-black disabled:text-gray-600`}
+                disabled={pageIndex === 1 ? true : false}
+                onClick={() => {
+                  turnImagesOff();
+                  navigate({
+                    to: baseUrl,
+                    search: { pageIndex: pageIndex - 1, isFavorite },
+                  });
+                }}
+              >
+                Prev Page
+              </button>
+            </div>
+            <div className="text-white font-bold">
+              {pageIndex} of {isFavorite ? maxFavoritePages : maxPages}
+            </div>
+            <div className="flex-auto">
+              <button
+                className={`font-bold p-1.5 rounded-xl bg-gray-800 hover:bg-gray-600 active:bg-gray-500 disabled:bg-black disabled:text-gray-600`}
+                disabled={
+                  isFavorite
+                    ? pageIndex === maxFavoritePages
+                      ? true
+                      : false
+                    : pageIndex === maxPages
+                      ? true
+                      : false
+                }
+                onClick={() => {
+                  turnImagesOff();
+                  navigate({
+                    to: baseUrl,
+                    search: { pageIndex: pageIndex + 1, isFavorite },
+                  });
+                }}
+              >
+                Next Page
+              </button>
+            </div>
           </div>
-          <div className="text-white font-bold">
-            {pageIndex} of {isFavorite ? maxFavoritePages : maxPages}
-          </div>
-          <div className="flex-auto">
-            <button
-              className={`font-bold p-1.5 rounded-xl bg-gray-800 hover:bg-gray-600 active:bg-gray-500 disabled:bg-black disabled:text-gray-600`}
-              disabled={
-                isFavorite
-                  ? pageIndex === maxFavoritePages
-                    ? true
-                    : false
-                  : pageIndex === maxPages
-                    ? true
-                    : false
-              }
-              onClick={() => {
-                turnImagesOff();
-                navigate({
-                  to: baseUrl,
-                  search: { pageIndex: pageIndex + 1 },
-                });
-              }}
-            >
-              Next Page
-            </button>
-          </div>
-        </div>
+        ) : undefined}
       </div>
     );
   } else {

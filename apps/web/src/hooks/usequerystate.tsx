@@ -11,7 +11,7 @@ export default function useQueryState<
   const router = useRouter();
   const navigte = useNavigate();
   function setState(c: ActualType) {
-    navigte({ to: ".", search: { [name]: c } as any });
+    navigte({ search: (prev) => ({ ...prev, [name]: c }) });
   }
   const state = (router.state.location.search as any)[name] as
     | string

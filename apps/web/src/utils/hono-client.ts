@@ -15,7 +15,7 @@ console.log(userId);
 const initDataRaw = retrieveRawInitData();
 console.log(initDataRaw);
 
-export const client = hcWithType("https://192.168.1.102:5173/", {
+export const client = hcWithType("https://192.168.1.101:5173/", {
   headers: { Authorization: `tma ${initDataRaw}`, userId },
   init: { credentials: "include" },
 });
