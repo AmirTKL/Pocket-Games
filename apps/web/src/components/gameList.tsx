@@ -104,6 +104,15 @@ export default function GameList({
           </div>
         </div>
       );
+    } else if (
+      setInitialRecent &&
+      gamesQuery.data.data.recentGames.length === 0
+    ) {
+      return (
+        <div className="flex flex-col text-center text-2xl p-5 font-bold">
+          Welcome! No recent games received yet.
+        </div>
+      );
     } else if (!isFavorite && maxPages === 0) {
       return (
         <div className="flex flex-col text-center text-2xl p-5 font-bold">

@@ -29,41 +29,46 @@ function RouteComponent() {
       <div className="flex flex-col m-3 items-center text-center gap-5 font-bold">
         <div>Most Played Games:</div>
         <ol className="font-normal">
-          {sortedPlaytimes?.map((gameinfo) => {
-            if (gameinfo && gameinfo.game) {
-              function playtime() {
-                const playtimeSeconds = Number(gameinfo.playtime);
-                if (playtimeSeconds < 60) {
-                  return "< 1min";
-                } else if (playtimeSeconds < 3600) {
-                  return (playtimeSeconds / 60).toString() + "min";
-                } else {
-                  return (
-                    Math.floor(playtimeSeconds / 3600).toString() +
-                    "hrs " +
-                    Math.floor((playtimeSeconds % 3600) / 60).toString() +
-                    "min"
-                  );
+          {sortedPlaytimes?.length === 0 ? (
+            <div>No playtimes submitted yet.</div>
+          ) : (
+            sortedPlaytimes?.map((gameinfo) => {
+              if (gameinfo && gameinfo.game) {
+                function playtime() {
+                  const playtimeSeconds = Number(gameinfo.playtime);
+                  if (playtimeSeconds < 60) {
+                    return "< 1min";
+                  } else if (playtimeSeconds < 3600) {
+                    return (playtimeSeconds / 60).toString() + "min";
+                  } else {
+                    return (
+                      Math.floor(playtimeSeconds / 3600).toString() +
+                      "hrs " +
+                      Math.floor((playtimeSeconds % 3600) / 60).toString() +
+                      "min"
+                    );
+                  }
                 }
+                return (
+                  <Link
+                    className=""
+                    key={gameinfo.game}
+                    to="/games/$gameName"
+                    params={{ gameName: gameinfo.game }}
+                    search={{ lastPage: "/profile" }}
+                  >
+                    <li>
+                      {gameinfo.game.charAt(0).toUpperCase() +
+                        gameinfo.game.slice(1)}
+                      : <span className="font-black">{playtime()}</span>
+                    </li>
+                  </Link>
+                );
+              } else {
+                return <li>Error</li>;
               }
-              return (
-                <Link className=""
-                  key={gameinfo.game}
-                  to="/games/$gameName"
-                  params={{ gameName: gameinfo.game }}
-                  search={{ lastPage: "/profile"}}
-                >
-                  <li>
-                    {gameinfo.game.charAt(0).toUpperCase() +
-                      gameinfo.game.slice(1)}
-                    : <span className="font-black">{playtime()}</span>
-                  </li>
-                </Link>
-              );
-            } else {
-              return <li>Error</li>;
-            }
-          })}
+            })
+          )}
         </ol>
       </div>
     </div>
